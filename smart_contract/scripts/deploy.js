@@ -8,7 +8,7 @@ const main = async() => {
 
   await lottery.deployed();
 
-  console.log("Transactions deployed to:", transactions.address);
+  console.log("Transactions deployed to:", lottery.address);
 }
 
   const runMain = async () => {
