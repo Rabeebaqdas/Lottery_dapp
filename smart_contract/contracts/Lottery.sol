@@ -1,40 +1,45 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.8.0 <=0.9.0;
-
-import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
-contract Lottery is VRFConsumerBase {
+pragma solidity ^0.8.0;
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+contract Lottery is VRFConsumerBaseV2 {
     address public owner;
     address payable[] public players;
     uint public lotteryId;
     mapping (uint => address payable) public lotteryHistory;
-
-    bytes32 internal keyHash; // identifies which Chainlink oracle to use
-    uint internal fee;        // fee to get random number
+    VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
     uint public randomResult;
+    bytes32 private immutable i_gasLane; // identifies which Chainlink oracle to use
+    uint64 private immutable i_subscriptionId;
+    uint32 private immutable i_callbackGasLimit;
+    uint16 private constant REQUEST_CONFORMATION = 3;
+    uint32 private constant NUM_WORDS = 1;
 
-    constructor()
-        VRFConsumerBase(
-
-            0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B, // VRF coordinator
-            0x01BE23585060835E02B77ef475b0Cc51aA1e0709  // LINK token address
-        ) {
-            keyHash = 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311;
-            fee = 0.1 * 10 ** 18;    // 0.1 LINK
-
-            owner = msg.sender;
-            lotteryId = 1;
+    constructor(address vrfCoordinatorV2, bytes32 gasLane,uint64 subscriptionId,uint32 callbackGasLimit)
+        VRFConsumerBaseV2( vrfCoordinatorV2) {
+        i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
+        i_gasLane = gasLane; //keyhash
+        i_subscriptionId = subscriptionId;
+        i_callbackGasLimit = callbackGasLimit;
+        owner = msg.sender;
+        lotteryId = 1;
         }
 
-    function getRandomNumber() public returns (bytes32 requestId) {
-        require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK in contract");
-        return requestRandomness(keyHash, fee);
+    function getRandomNumber() internal {
+   uint256 requestId = i_vrfCoordinator.requestRandomWords(
+      i_gasLane, //keyhash
+      i_subscriptionId,
+      REQUEST_CONFORMATION,
+      i_callbackGasLimit,
+      NUM_WORDS
+    );
+    randomResult = requestId;
+    payWinner();
     }
 
-    function fulfillRandomness(bytes32 requestId, uint randomness) internal override {
-        randomResult = randomness;
-        payWinner();
-
+    function fulfillRandomWords( uint256 /* requestId */,  uint256[] memory _randomWords) internal override{
+         randomResult = _randomWords[0];
     }
 
     function getWinnerByLottery(uint lottery) public view returns (address payable) {
