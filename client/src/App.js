@@ -3,7 +3,8 @@ import "bulma/css/bulma.css";
 import { useContext } from 'react';
 import {LotteryContext} from './context/LotteryContext';
 function App() {
-  const {connectWallet,lotteryPot,lotteryPlayers,enterLottery,error,success,pickWinner,currentAccount,lotteryHistory,lotteryId} = useContext(LotteryContext);
+  const {connectWallet,lotteryPot,lotteryPlayers,enterLottery,error,success,pickWinner,currentAccount,lotteryHistory,lotteryId,loading} = useContext(LotteryContext);
+  const owner = "0xbb45AF76f5198db4e38bA3668993c82739343c40" 
 
   return (
     <div className="App">
@@ -16,7 +17,12 @@ function App() {
            </div>
             
            <div className='navbar-end'>
-        <button className='button is-link' onClick={connectWallet}>Connect Wallet</button>
+        {currentAccount ? 
+         <button className='button is-link'>{`${currentAccount.slice(0,5)}...${currentAccount.slice(currentAccount.length - 4)}`}</button>
+         :
+         <button className='button is-link' onClick={connectWallet} disabled= {loading}>Connect Wallet</button>
+     
+      }
            </div>
          </div>
        </nav>
@@ -27,13 +33,13 @@ function App() {
            <div className='column is-two-third'>
           <section className='mt-5'>
             <p>Enter in the Lottery by sending 0.011 Ether</p>
-            <button className='button is-link is-large is-light mt-3' onClick={enterLottery}>Play now</button>
+            <button className='button is-link is-large is-light mt-3' onClick={enterLottery} disabled={loading}>Play now</button>
           </section>
-          {currentAccount == "0xfdb039899f5bfeac8bc3cd898a0e807d31849fde"
+          {currentAccount?.toLowerCase() == owner.toLowerCase()
             ?
             <section className='mt-6'>
             <p><b>Admin only:</b> Pick winner</p>
-            <button className='button is-primary is-large is-light mt-3' onClick={pickWinner} disabled={lotteryPlayers.length == 0}>Pick Winner</button>
+            <button className='button is-primary is-large is-light mt-3' onClick={pickWinner} disabled={lotteryPlayers.length == 0 || loading}>Pick Winner</button>
           </section>
           :
           ""
