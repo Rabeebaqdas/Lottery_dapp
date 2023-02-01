@@ -23,6 +23,8 @@ export const LotteryProvider = ({ children }) => {
     const [lotteryId,setLotteryId] = useState();
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
+
 
     useEffect(() => {
         checkWalletIsConnected();
@@ -62,13 +64,17 @@ export const LotteryProvider = ({ children }) => {
     const connectWallet = async () => {
         setError("")
         try {
+            setLoading(true)
             if (!ethereum) return alert("Please Install Metamask");
             const accounts = await ethereum.request({ method: "eth_requestAccounts" })
             setCurrentAccount(accounts[0]);
             window.location.reload();
+            setLoading(false)
+
         } 
         
         catch (err) {
+            setLoading(false)
             setError(err.message);
             throw new Error("No ethereum object.")
         }
@@ -87,18 +93,23 @@ export const LotteryProvider = ({ children }) => {
     }
 
     const enterLottery = async () => {
+        
         setError("")
         try {
-          
-            await getLotteryContract().enter({
+            setLoading(true)    
+          const res =  await getLotteryContract().enter({
                 from: currentAccount,
                 value: '11000000000000000',
                 gasLimit: 3000000,
                 gasPrice: null
 
         })
-          setTimeout(reload, 10000);
+        await res.wait()
+        window.location.reload()
+        setLoading(false)
+
         } catch (err) {
+        setLoading(false)
             setError(err.message);
         }
 
@@ -109,15 +120,20 @@ export const LotteryProvider = ({ children }) => {
     }
 
     const pickWinner =  async() => {
+
        setError('')
        setSuccess('')
         try{
-            await getLotteryContract().pickWinner({
+        setLoading(true)
+           const res =  await getLotteryContract().pickWinner({
                 from: currentAccount,
                 gasLimit: 3000000,
                 gasPrice: null
             })
+            await res.wait()
+        setLoading(false)
         }catch(err){
+        setLoading(false)
             setError(err.message);
         }
     }
@@ -146,7 +162,7 @@ export const LotteryProvider = ({ children }) => {
 
 
     return (
-        <LotteryContext.Provider value={{ connectWallet, currentAccount, lotteryPot, lotteryPlayers, enterLottery,error,success,pickWinner,lotteryHistory,lotteryId }}>
+        <LotteryContext.Provider value={{ connectWallet, currentAccount, lotteryPot, lotteryPlayers, enterLottery,error,success,pickWinner,lotteryHistory,lotteryId,loading }}>
             {children}
         </LotteryContext.Provider>
     )
