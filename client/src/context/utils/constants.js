@@ -1,7 +1,45 @@
-export const lotteryAbi = [{
-      "inputs": [],
+export const lotteryAbi = [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "vrfCoordinatorV2",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "gasLane",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint64",
+          "name": "subscriptionId",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint32",
+          "name": "callbackGasLimit",
+          "type": "uint32"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "have",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "want",
+          "type": "address"
+        }
+      ],
+      "name": "OnlyCoordinatorCanFulfill",
+      "type": "error"
     },
     {
       "inputs": [],
@@ -34,19 +72,6 @@ export const lotteryAbi = [{
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getRandomNumber",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "requestId",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -162,20 +187,21 @@ export const lotteryAbi = [{
     {
       "inputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "requestId",
-          "type": "bytes32"
+          "type": "uint256"
         },
         {
-          "internalType": "uint256",
-          "name": "randomness",
-          "type": "uint256"
+          "internalType": "uint256[]",
+          "name": "randomWords",
+          "type": "uint256[]"
         }
       ],
-      "name": "rawFulfillRandomness",
+      "name": "rawFulfillRandomWords",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
-    }]
-export const contractAddress = "0xAc0f686d12eEBe9236D7B7F1891712f6fa59f1b5";
+    }
+  ]
+export const contractAddress = "0xBc393AAecc13AC1A10A71BD2CAd9d6DbDB108F34";
 
